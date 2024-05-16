@@ -1,0 +1,98 @@
+package com.example.lab_1;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+
+public class Main extends JFrame {
+    private JLabel lat1Label, lon1Label, lat2Label, lon2Label, resultLabel;
+    private JTextField lat1Field, lon1Field, lat2Field, lon2Field, resultField;
+    private JButton solveButton, clearButton;
+
+    public Main() {
+        setTitle("Distance Calculator");
+        setBounds(300, 200, 400,300);
+        //setSize(400, 300);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLayout(new GridLayout(6, 2));
+
+        lat1Label = new JLabel("Latitude 1 (φ1): ");
+        lon1Label = new JLabel("Longitude 1 (λ1): ");
+        lat2Label = new JLabel("Latitude 2 (φ2): ");
+        lon2Label = new JLabel("Longitude 2 (λ2): ");
+        resultLabel = new JLabel("Result Distance (m): ");
+
+        lat1Field = new JTextField();
+        lon1Field = new JTextField();
+        lat2Field = new JTextField();
+        lon2Field = new JTextField();
+        resultField = new JTextField();
+        resultField.setEditable(false);
+
+        solveButton = new JButton("Solve");
+        clearButton = new JButton("Clear");
+
+        solveButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                calculateDistance();
+            }
+        });
+
+        clearButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                clearFields();
+            }
+        });
+
+        add(lat1Label);
+        add(lat1Field);
+        add(lon1Label);
+        add(lon1Field);
+        add(lat2Label);
+        add(lat2Field);
+        add(lon2Label);
+        add(lon2Field);
+        add(resultLabel);
+        add(resultField);
+        add(solveButton);
+        add(clearButton);
+
+        setVisible(true);
+    }
+
+    private void calculateDistance() {
+        double lat1 = Double.parseDouble(lat1Field.getText());
+        double lon1 = Double.parseDouble(lon1Field.getText());
+        double lat2 = Double.parseDouble(lat2Field.getText());
+        double lon2 = Double.parseDouble(lon2Field.getText());
+
+        double R = 6371e3;
+
+        double φ1 = Math.toRadians(lat1);
+        double φ2 = Math.toRadians(lat2);
+        double Δφ = Math.toRadians(lat2 - lat1);
+        double Δλ = Math.toRadians(lon2 - lon1);
+
+        double a = Math.pow(Math.sin(Δφ / 2), 2) + Math.cos(φ1) * Math.cos(φ2) * Math.pow(Math.sin(Δλ / 2), 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        double D = R * c;
+
+        resultField.setText(String.format("%.2f", D));
+    }
+
+    private void clearFields() {
+        lat1Field.setText("");
+        lon1Field.setText("");
+        lat2Field.setText("");
+        lon2Field.setText("");
+        resultField.setText("");
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                new Main();
+            }
+        });
+    }
+}
