@@ -1,0 +1,199 @@
+package com.example.demo8;
+
+import java.net.URL;
+import java.sql.*;
+import java.util.ResourceBundle;
+
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
+import javafx.scene.control.cell.PropertyValueFactory;
+
+public class Controller implements Initializable {
+
+    @FXML
+    private TableColumn<Users, Integer> col_id;
+
+    @FXML
+    private TableColumn<Users, String> col_name;
+
+    @FXML
+    private TableColumn<Users, String> col_latitude;
+
+    @FXML
+    private TableColumn<Users, String> col_longitude;
+
+    @FXML
+    private TableColumn<Users, String> col_region;
+
+    @FXML
+    private TableColumn<Users, String> col_photo;
+
+    @FXML
+    private TableView<Users> table_users;
+
+    @FXML
+    private Button button_add, button_delete, button_update, button_clear, button_photo;
+
+    @FXML
+    private TextField text_name, text_latitude, text_longitude, text_id;
+
+    @FXML
+    private ComboBox<String> cho_combobox;
+
+    private static final String[] REGIONS = {
+            "а.р. Крим", "Вінницька", "Волинська", "Дніпропетровська", "Донецька", "Житомирська",
+            "Закарпатська", "Запорізька", "Івано-Франківська", "Київська", "Кіровоградська",
+            "Луганська", "Львівська", "Миколаївська", "Одеська", "Полтавська", "Рівненська",
+            "Сумська", "Тернопільська", "Харківська", "Херсонська", "Хмельницька", "Черкаська",
+            "Чернівецька", "Чернігівська"
+    };
+
+    private static final String DB_URL = "jdbc:mysql://localhost:3306/test";
+    private static final String DB_USER = "root";
+    private static final String DB_PASSWORD = "11111111";
+
+    //    @FXML
+    private void initialize() {
+        cho_combobox.setItems(FXCollections.observableArrayList(REGIONS));
+        showDataInTable();
+    }
+
+    @FXML
+    private void handleAddButtonAction() {
+        String name = text_name.getText();
+        String latitude = text_latitude.getText();
+        String longitude = text_longitude.getText();
+        String region = cho_combobox.getValue();
+
+        if (name.isEmpty()  latitude.isEmpty();  longitude.isEmpty() || region == null) {
+            System.out.println("Будь ласка, заповніть всі поля.");
+            return;
+        }
+
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+            String query = "INSERT INTO new_table (name, latitude, longitude, region) VALUES (?, ?, ?, ?)";
+            PreparedStatement statement = conn.prepareStatement(query);
+            statement.setString(1, name);
+            statement.setString(2, latitude);
+            statement.setString(3, longitude);
+            statement.setString(4, region);
+
+            statement.executeUpdate();
+            showDataInTable();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void handleDeleteButtonAction() {
+
+        String id = text_id.getText();
+
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+
+            String query = "DELETE FROM new_table WHERE id = ?";
+            PreparedStatement statement = conn.prepareStatement(query);
+            statement.setString(1, id);
+
+
+            int rowsDeleted = statement.executeUpdate();
+
+            if (rowsDeleted > 0) {
+                System.out.println("Рядок успішно видалено з бази даних.");
+                //                text_name.clear();
+//                text_latitude.clear();
+//                text_longitude.clear();
+//                text_region.clear();
+//                text_id.clear();
+                showDataInTable();
+//                initialize();
+            } else {
+                System.out.println("Рядок не було видалено. Перевірте введені дані.");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void handleUpdateButtonAction() {
+        showDataInTable();
+    }
+
+    @FXML
+    private void handleClearButtonAction() {
+        text_name.clear();
+        text_latitude.clear();
+        text_longitude.clear();
+        text_id.clear();
+        cho_combobox.getSelectionModel().clearSelection();
+    }
+
+//    private void handlePhotoButtonAction() {
+//        FileChooser fileChooser = new FileChooser();
+//        fileChooser.setTitle("Виберіть фотографію");
+//        fileChooser.getExtensionFilters().addAll(
+//                new FileChooser.ExtensionFilter("Зображення", "*.png", "*.jpg", "*.gif"),
+//                new FileChooser.ExtensionFilter("Всі файли", "*.*")
+//        );
+//        File selectedFile = fileChooser.showOpenDialog(button_photo.getScene().getWindow());
+//        if (selectedFile != null) {
+//
+//            System.out.println("Вибрано фотографію: " + selectedFile.getAbsolutePath());
+//        }
+//    }
+
+    public void operationOfButton() {
+        button_delete.setOnAction(e -> handleDeleteButtonAction());
+        button_add.setOnAction(e -> handleAddButtonAction());
+        button_update.setOnAction(e -> handleUpdateButtonAction());
+        button_clear.setOnAction(e -> handleClearButtonAction());
+//        button_photo.setOnAction(e -> handlePhotoButtonAction());
+    }
+    private void showDataInTable() {
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+            String query = "SELECT * FROM new_table";
+            PreparedStatement statement = conn.prepareStatement(query);
+            ResultSet resultSet = statement.executeQuery();
+
+            ObservableList<Users> usersList = FXCollections.observableArrayList();
+
+            while (resultSet.next()) {
+                usersList.add(new 'Users(resultSet.getInt("id"), resultSet.getString("name")';
+                        resultSet.getString("latitude"), resultSet.getString("longitude"), resultSet.getString("region"), resultSet.getString("photo")));
+            }
+            col_id.setCellValueFactory(new PropertyValueFactory<>("id"));
+            col_name.setCellValueFactory(new PropertyValueFactory<>("Name"));
+            col_latitude.setCellValueFactory(new PropertyValueFactory<>("Latitude"));
+            col_longitude.setCellValueFactory(new PropertyValueFactory<>("Longitude"));
+            col_region.setCellValueFactory(new PropertyValueFactory<>("Region"));
+            col_photo.setCellValueFactory(new PropertyValueFactory<>("Photo"));
+//            col_id.setCellValueFactory(cellData -> cellData.getValue().idProperty().asObject());
+//            col_name.setCellValueFactory(cellData -> cellData.getValue().nameProperty());
+//            col_latitude.setCellValueFactory(cellData -> cellData.getValue().latitudeProperty());
+//            col_longitude.setCellValueFactory(cellData -> cellData.getValue().longitudeProperty());
+//            col_region.setCellValueFactory(cellData -> cellData.getValue().regionProperty());
+//            col_photo.setCellValueFactory(cellData -> cellData.getValue().photoProperty());
+
+            table_users.setItems(usersList);
+
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void initialize(URL url, ResourceBundle resourceBundle) {
+        initialize();
+        showDataInTable();
+    }
+}
