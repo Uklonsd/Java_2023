@@ -1,0 +1,52 @@
+package com.example.demo2;
+
+import javafx.fxml.FXML;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
+
+public class Controller {
+
+    @FXML
+    private TextField lat1Field, lon1Field, lat2Field, lon2Field, resultField;
+
+    @FXML
+    private Button solveButton, clearButton;
+
+    @FXML
+    private void initialize() {
+        solveButton.setOnAction(e -> calculateDistance());
+        clearButton.setOnAction(e -> clearFields());
+    }
+
+    private void calculateDistance() {
+        try {
+            double lat1 = Double.parseDouble(lat1Field.getText());
+            double lon1 = Double.parseDouble(lon1Field.getText());
+            double lat2 = Double.parseDouble(lat2Field.getText());
+            double lon2 = Double.parseDouble(lon2Field.getText());
+
+            double R = 6371e3;
+
+            double φ1 = Math.toRadians(lat1);
+            double φ2 = Math.toRadians(lat2);
+            double Δφ = Math.toRadians(lat2 - lat1);
+            double Δλ = Math.toRadians(lon2 - lon1);
+
+            double a = Math.pow(Math.sin(Δφ / 2), 2) + Math.cos(φ1) * Math.cos(φ2) * Math.pow(Math.sin(Δλ / 2), 2);
+            double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            double D = R * c;
+
+            resultField.setText(String.format("%.2f", D));
+        } catch (NumberFormatException e) {
+            resultField.setText("Некоректні дані");
+        }
+    }
+
+    private void clearFields() {
+        lat1Field.setText("");
+        lon1Field.setText("");
+        lat2Field.setText("");
+        lon2Field.setText("");
+        resultField.setText("");
+    }
+}
